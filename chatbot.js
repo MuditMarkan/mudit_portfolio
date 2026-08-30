@@ -4,8 +4,8 @@
    No secrets in this file — safe to push to GitHub.
    ============================================================ */
 
-// ── Render proxy URL — update this after deploying to Render ──
-const PROXY_URL = "https://mudit-ai-api.onrender.com/api/chat";
+// ── Render proxy URL ──
+const PROXY_URL = "https://mudit-portfolio.onrender.com/api/chat";
 
 const MAX_MESSAGES_PER_SESSION = 10;
 
