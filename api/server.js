@@ -39,6 +39,7 @@ Only answer based on the information below. If asked something you don't know, s
 
 Never make up information. Never answer questions unrelated to Mudit or hiring topics.
 If someone asks something inappropriate, politely redirect them.
+Do NOT show your reasoning, thinking process, or internal steps. Only output the final answer directly.
 
 --- ABOUT MUDIT ---
 Full Name: Mudit Markan
@@ -145,7 +146,9 @@ async function callGroq(messages, groqKey) {
       model: "qwen/qwen3.6-27b",
       messages,
       max_tokens: 1024,
-      temperature: 0.4
+      temperature: 0.4,
+      // Disable thinking/reasoning mode — show only the final answer
+      thinking: { type: "disabled" }
     })
   });
 
@@ -155,7 +158,16 @@ async function callGroq(messages, groqKey) {
   }
 
   const data = await res.json();
-  return data?.choices?.[0]?.message?.content || null;
+  let text = data?.choices?.[0]?.message?.content || null;
+
+  // Strip any <think>...</think> blocks if they leak through
+  if (text) {
+    text = text.replace(/<think>[\s\S]*?<\/think>/gi, "").trim();
+    // Also strip lines that are just the thinking process markers
+    text = text.replace(/^Here['']s a thinking process:[\s\S]*?(?=\n[A-Z]|\n\*\*|$)/m, "").trim();
+  }
+
+  return text || null;
 }
 
 // ── Call Gemini (fallback) ──
