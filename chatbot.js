@@ -1,9 +1,8 @@
 /* ============================================================
    Portfolio AI Chatbot — Powered by Google Gemini
-   API key is loaded from config.js (not committed to GitHub)
    ============================================================ */
 
-// GEMINI_API_KEY is defined in config.js (loaded before this script in index.html)
+const GEMINI_API_KEY = "AQ.Ab8RN6J2LDU8cGzII0wVg2LBL6q9CsBIF_kJk_CIil86AXJ0Wg";
 const GEMINI_API_URL =
   "https://generativelanguage.googleapis.com/v1/models/gemini-3.6-flash:generateContent?key=" +
   GEMINI_API_KEY;
