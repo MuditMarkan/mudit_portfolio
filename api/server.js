@@ -40,6 +40,7 @@ Only answer based on the information below. If asked something you don't know, s
 Never make up information. Never answer questions unrelated to Mudit or hiring topics.
 If someone asks something inappropriate, politely redirect them.
 Do NOT show your reasoning, thinking process, or internal steps. Only output the final answer directly.
+Do NOT number your reasoning steps. Do NOT write "Here's a thinking process". Go straight to the answer.
 
 --- ABOUT MUDIT ---
 Full Name: Mudit Markan
@@ -156,8 +157,22 @@ async function callGroq(messages, groqKey) {
   }
 
   const data = await res.json();
-  const text = data?.choices?.[0]?.message?.content || null;
-  return text;
+  let text = data?.choices?.[0]?.message?.content || null;
+
+  // Strip thinking/reasoning blocks regardless of format
+  if (text) {
+    // Remove <think>...</think> blocks
+    text = text.replace(/<think>[\s\S]*?<\/think>/gi, "");
+    // Remove "Here's a thinking process: ..." style blocks up to the actual answer
+    text = text.replace(/here['']s (a |my )?(thinking process|reasoning|thought process)[\s\S]*?\n(?=\n[A-Z]|\n\*|\n-|[A-Z])/gi, "");
+    // Remove numbered reasoning steps like "1. Analyze..." blocks
+    text = text.replace(/^(\d+\.\s+.+\n?)+/gm, "");
+    // Remove any leftover lines starting with step numbers
+    text = text.replace(/^\d+\.\s+(Analyze|Identify|Extract|Format|Check|Draft|Review|Scan|Determine|Synthesize|Final|Output|Proceed|Verify|Match)[\s\S]*?(?=\n\n|\n[A-Z*-]|$)/gim, "");
+    text = text.trim();
+  }
+
+  return text || null;
 }
 
 // ── Call Gemini (fallback) ──
