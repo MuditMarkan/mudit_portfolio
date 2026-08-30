@@ -179,38 +179,54 @@ Work authorization: Eligible to work in Canada.`;
 
   const geminiUrl = `https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash-lite:generateContent?key=${apiKey}`;
 
-  try {
-    const geminiRes = await fetch(geminiUrl, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        contents,
-        generationConfig: {
-          temperature: 0.4,
-          maxOutputTokens: 512,
-          topP: 0.8
-        },
-        safetySettings: [
-          { category: "HARM_CATEGORY_HARASSMENT",   threshold: "BLOCK_MEDIUM_AND_ABOVE" },
-          { category: "HARM_CATEGORY_HATE_SPEECH",  threshold: "BLOCK_MEDIUM_AND_ABOVE" }
-        ]
-      })
-    });
+  // Retry up to 3 times on 503 (model overloaded)
+  let lastError = null;
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    try {
+      const geminiRes = await fetch(geminiUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents,
+          generationConfig: {
+            temperature: 0.4,
+            maxOutputTokens: 1024,
+            topP: 0.8
+          },
+          safetySettings: [
+            { category: "HARM_CATEGORY_HARASSMENT",  threshold: "BLOCK_MEDIUM_AND_ABOVE" },
+            { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_MEDIUM_AND_ABOVE" }
+          ]
+        })
+      });
 
-    if (!geminiRes.ok) {
-      const errData = await geminiRes.json().catch(() => ({}));
-      console.error("Gemini error:", errData);
-      return res.status(502).json({ error: "Gemini API error: " + (errData?.error?.message || geminiRes.status) });
+      if (geminiRes.status === 503) {
+        // Model overloaded — wait and retry
+        lastError = "Model overloaded (503)";
+        await new Promise(r => setTimeout(r, attempt * 1000));
+        continue;
+      }
+
+      if (!geminiRes.ok) {
+        const errData = await geminiRes.json().catch(() => ({}));
+        console.error("Gemini error:", errData);
+        return res.status(502).json({ error: "Gemini API error: " + (errData?.error?.message || geminiRes.status) });
+      }
+
+      const data = await geminiRes.json();
+      const text = data?.candidates?.[0]?.content?.parts?.[0]?.text || "I couldn't generate a response. Please try again.";
+      return res.json({ reply: text });
+
+    } catch (err) {
+      lastError = err.message;
+      console.error(`Proxy attempt ${attempt} error:`, err);
+      if (attempt < 3) await new Promise(r => setTimeout(r, attempt * 1000));
     }
-
-    const data = await geminiRes.json();
-    const text = data?.candidates?.[0]?.content?.parts?.[0]?.text || "I couldn't generate a response. Please try again.";
-    return res.json({ reply: text });
-
-  } catch (err) {
-    console.error("Proxy error:", err);
-    return res.status(500).json({ error: "Proxy server error. Please try again." });
   }
+
+  // All retries failed
+  console.error("All retries failed:", lastError);
+  return res.status(500).json({ error: "Service temporarily busy. Please try again in a moment." });
 });
 
 app.listen(PORT, () => {

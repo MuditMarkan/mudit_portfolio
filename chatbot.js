@@ -161,7 +161,7 @@ async function sendMessage(userText) {
     removeTyping(typingId);
     appendMessage(
       "bot",
-      "Sorry, I ran into an issue. Please try again or contact Mudit directly at muditmarkan@gmail.com"
+      "The AI service is temporarily busy. Please wait a moment and try again, or contact Mudit directly at muditmarkan@gmail.com"
     );
     console.error("Chatbot error:", err);
   } finally {
