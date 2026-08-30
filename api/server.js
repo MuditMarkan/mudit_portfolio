@@ -177,7 +177,7 @@ Work authorization: Eligible to work in Canada.`;
   // Append current user message
   contents.push({ role: "user", parts: [{ text: message }] });
 
-  const geminiUrl = `https://generativelanguage.googleapis.com/v1/models/gemini-3.6-flash:generateContent?key=${apiKey}`;
+  const geminiUrl = `https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash-lite:generateContent?key=${apiKey}`;
 
   try {
     const geminiRes = await fetch(geminiUrl, {
