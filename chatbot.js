@@ -5,7 +5,8 @@
    ============================================================ */
 
 // ── Render proxy URL ──
-const PROXY_URL = "https://mudit-portfolio.onrender.com/api/chat";
+const PROXY_URL = "https://muditportfolio-hve9bah3apaybudg.eastus2-01.azurewebsites.net/api/chat";
+
 
 const MAX_MESSAGES_PER_SESSION = 10;
 
