@@ -1,5 +1,6 @@
 const express = require("express");
 const cors = require("cors");
+const path = require("path");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -40,10 +41,52 @@ app.use(
 );
 
 /* ============================================================
-   HEALTH CHECK
+   SERVE PORTFOLIO FRONTEND
+   ============================================================
+
+   Repository structure:
+
+   /
+   ├── index.html
+   ├── main.js
+   ├── styles.css
+   ├── chatbot.js
+   ├── chatbot.css
+   └── api/
+       ├── server.js
+       └── package.json
+
+   server.js is inside /api.
+   Therefore ".." points to the portfolio root.
+   ============================================================ */
+
+const PORTFOLIO_ROOT = path.join(
+  __dirname,
+  ".."
+);
+
+app.use(
+  express.static(PORTFOLIO_ROOT)
+);
+
+/* ============================================================
+   PORTFOLIO HOME PAGE
    ============================================================ */
 
 app.get("/", (req, res) => {
+  res.sendFile(
+    path.join(
+      PORTFOLIO_ROOT,
+      "index.html"
+    )
+  );
+});
+
+/* ============================================================
+   HEALTH CHECK
+   ============================================================ */
+
+app.get("/health", (req, res) => {
   res.json({
     status: "ok",
     service: "Mudit Portfolio AI Proxy"
@@ -81,6 +124,25 @@ Do NOT number your reasoning steps.
 Do NOT write "Here's a thinking process".
 
 Go straight to the answer.
+
+
+--- RESPONSE FORMAT ---
+
+Format answers for a small website chat window.
+
+Do NOT use Markdown tables.
+
+Prefer:
+
+- Short paragraphs
+- Bullet points
+- Numbered lists when useful
+- **Bold** for important names, technologies, and companies
+- Markdown links when a relevant URL is available
+
+Keep responses concise and easy to scan.
+
+Do not include unnecessary introductions or conclusions.
 
 
 --- ABOUT MUDIT ---
@@ -127,11 +189,8 @@ and REST APIs from his previous role as a Software Team Lead at Vosyn.
 
 - Building an AI-powered QA agent using LangGraph and LangChain that autonomously identifies
   potential bugs, improves issue analysis, and generates structured test reports.
-
 - Reproducing defects, reviewing technical logs, and validating PostgreSQL database behaviour.
-
 - Testing fixes end-to-end and documenting findings shared directly with developers.
-
 - Contributing to the Vosyn Careers dashboard — full-stack development, database work, and testing.
 
 Skills:
@@ -141,13 +200,9 @@ LangGraph, LangChain, Python, PostgreSQL, AI Agents, QA Automation
 2. Software Developer & Team Lead | Vosyn Inc. | Feb 2025 – Jul 2026 | Mississauga, ON | Remote
 
 - Led a cross-functional team of 20+ developers across 4 concurrent product streams.
-
 - Built responsive UI components using React.js, Next.js, and MUI.
-
 - Reviewed 30+ pull requests per sprint — 25% increase in team velocity, 20% reduction in bugs.
-
 - Integrated REST APIs across microservices architecture.
-
 - Delivered 520+ verified hours across 4 product streams.
 
 Skills:
@@ -157,7 +212,6 @@ React.js, Next.js, TypeScript, JavaScript, REST APIs, Redux, MUI, Agile, Git
 3. Student Ambassador | George Brown Polytechnic | Aug 2025 – Jul 2026 | Toronto, ON | On-site
 
 - Primary point of contact for 200+ students daily.
-
 - Documented 15+ usability and AODA accessibility bugs on the GBP website.
 
 
@@ -196,39 +250,44 @@ Git, GitHub, Docker, Vercel, Jira, Linux, Notion
 
 1. ClaimAssist AI
 
-github.com/MuditMarkan/claimassist-ai
+GitHub:
+https://github.com/MuditMarkan/claimassist-ai
 
 AI-powered insurance claims assistant.
-Python, LLM-backed logic, structured validation.
+Built with Python, LLM-backed logic, and structured validation.
 
 
 2. Budget Tracker Agent
 
-github.com/MuditMarkan/budget_tracker_agent
+GitHub:
+https://github.com/MuditMarkan/budget_tracker_agent
 
-Agentic budget tracking app.
-TypeScript, Gemini AI-driven logic.
+Agentic budget tracking application.
+Built with TypeScript and Gemini AI-driven logic.
 
 
 3. CGC AI Project
 
-github.com/MuditMarkan/CGC_Project_AI
+GitHub:
+https://github.com/MuditMarkan/CGC_Project_AI
 
 Large Python AI project (~18MB) from George Brown.
-Applied AI with real data and models.
+Applied AI using real data and models.
 
 
 4. Vosyn AI Platform
 
-vosyn.ai
+Website:
+https://vosyn.ai
 
-Full-stack localization platform plus autonomous QA agent
+Full-stack localization platform plus an autonomous QA agent
 using LangGraph, LangChain, and PostgreSQL.
 
 
 5. Emotion Bot Robot
 
-github.com/Markanmudit/Emotion-Bot-Robot
+GitHub:
+https://github.com/Markanmudit/Emotion-Bot-Robot
 
 Physical robot that detects and responds to human emotions.
 Includes working demo videos.
@@ -236,24 +295,32 @@ Includes working demo videos.
 
 6. Local-first GenAI RAG System
 
-Fully local GenAI using Python + Qwen via Ollama.
-RAG, LangChain + LangGraph workflows.
+Fully local Generative AI system using Python and Qwen via Ollama.
+
+Uses:
+- RAG
+- LangChain
+- LangGraph
+- Local LLM workflows
 
 
 --- EDUCATION ---
 
 1. Postgraduate Diploma — Computer Programming
+
 George Brown Polytechnic
 Sep 2024 – May 2026
 GPA: 3.68/4.0
 
 
 2. Postgraduate Diploma — Computer Programming
+
 Collège LaSalle, Montréal
 Jan 2024 – Sep 2024
 
 
 3. Bachelor of Computer Applications (BCA)
+
 Tecnia Institute, New Delhi
 Aug 2019 – Jul 2022
 
@@ -266,11 +333,13 @@ Dec 2025
 
 --- AVAILABILITY ---
 
-Currently employed at Vosyn Inc. Open to new opportunities immediately.
+Currently employed at Vosyn Inc.
+
+Open to new opportunities immediately.
 
 Open to:
 
-- On-site (Toronto/Mississauga/Montreal)
+- On-site: Toronto, Mississauga, Montreal
 - Hybrid
 - Remote across Canada
 
@@ -279,10 +348,13 @@ Eligible to work in Canada.`;
 
 
 /* ============================================================
-   GROQ — PRIMARY
+   GROQ — PRIMARY PROVIDER
    ============================================================ */
 
-async function callGroq(messages, groqKey) {
+async function callGroq(
+  messages,
+  groqKey
+) {
   const response = await fetch(
     "https://api.groq.com/openai/v1/chat/completions",
     {
@@ -295,7 +367,7 @@ async function callGroq(messages, groqKey) {
 
       body: JSON.stringify({
         model: "openai/gpt-oss-20b",
-        messages,
+        messages: messages,
         max_tokens: 1024,
         temperature: 0.4
       })
@@ -304,7 +376,9 @@ async function callGroq(messages, groqKey) {
 
   if (!response.ok) {
     const error =
-      await response.json().catch(() => ({}));
+      await response
+        .json()
+        .catch(() => ({}));
 
     throw {
       status: response.status,
@@ -326,11 +400,13 @@ async function callGroq(messages, groqKey) {
 
 
 /* ============================================================
-   GEMINI — FALLBACK
+   GEMINI — FALLBACK PROVIDER
    ============================================================ */
 
-async function callGemini(messages, geminiKey) {
-
+async function callGemini(
+  messages,
+  geminiKey
+) {
   const systemMsg =
     messages.find(
       (message) =>
@@ -344,7 +420,6 @@ async function callGemini(messages, geminiKey) {
     );
 
   const contents = [
-
     {
       role: "user",
 
@@ -411,7 +486,6 @@ async function callGemini(messages, geminiKey) {
     );
 
   if (!response.ok) {
-
     const error =
       await response
         .json()
@@ -419,7 +493,6 @@ async function callGemini(messages, geminiKey) {
 
     throw {
       status: response.status,
-
       message:
         error?.error?.message ||
         response.statusText ||
@@ -453,11 +526,10 @@ app.post(
 
 
     /* --------------------------------------------------------
-       API KEY CHECK
+       CHECK API KEYS
        -------------------------------------------------------- */
 
     if (!groqKey && !geminiKey) {
-
       return res.status(500).json({
         error:
           "No API keys configured on server."
@@ -466,7 +538,7 @@ app.post(
 
 
     /* --------------------------------------------------------
-       REQUEST VALIDATION
+       VALIDATE REQUEST
        -------------------------------------------------------- */
 
     const {
@@ -479,7 +551,6 @@ app.post(
       !message ||
       typeof message !== "string"
     ) {
-
       return res.status(400).json({
         error:
           "Missing or invalid 'message' field."
@@ -488,7 +559,6 @@ app.post(
 
 
     if (message.length > 500) {
-
       return res.status(400).json({
         error:
           "Message too long. Max 500 characters."
@@ -497,7 +567,7 @@ app.post(
 
 
     /* --------------------------------------------------------
-       BUILD MESSAGES
+       BUILD CONVERSATION
        -------------------------------------------------------- */
 
     const messages = [
@@ -523,12 +593,10 @@ app.post(
           if (
             turn.role === "user"
           ) {
-
             messages.push({
               role: "user",
               content
             });
-
           }
 
 
@@ -536,12 +604,10 @@ app.post(
             turn.role === "model" ||
             turn.role === "assistant"
           ) {
-
             messages.push({
               role: "assistant",
               content
             });
-
           }
 
         });
@@ -555,7 +621,7 @@ app.post(
 
 
     /* ========================================================
-       GROQ FIRST
+       TRY GROQ FIRST
        ======================================================== */
 
     let text = null;
@@ -580,10 +646,8 @@ app.post(
 
 
           if (text) {
-
             usedProvider = "groq";
             break;
-
           }
 
         } catch (error) {
@@ -612,14 +676,12 @@ app.post(
           }
 
         }
-
       }
-
     }
 
 
     /* ========================================================
-       GEMINI FALLBACK
+       FALLBACK TO GEMINI
        ======================================================== */
 
     if (
@@ -643,10 +705,8 @@ app.post(
 
 
           if (text) {
-
             usedProvider = "gemini";
             break;
-
           }
 
         } catch (error) {
@@ -675,9 +735,7 @@ app.post(
           }
 
         }
-
       }
-
     }
 
 
@@ -696,7 +754,7 @@ app.post(
 
 
     /* ========================================================
-       RETURN ONLY FINAL AI ANSWER
+       RETURN ONLY FINAL ANSWER
        ======================================================== */
 
     console.log(
@@ -719,10 +777,8 @@ app.post(
 app.listen(
   PORT,
   () => {
-
     console.log(
       `Mudit AI proxy running on port ${PORT}`
     );
-
   }
 );
