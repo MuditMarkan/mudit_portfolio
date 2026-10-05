@@ -366,7 +366,7 @@ async function callGroq(
       },
 
       body: JSON.stringify({
-        model: "openai/gpt-oss-20b",
+        model: "llama-3.1-8b-instant",
         messages: messages,
         max_tokens: 1024,
         temperature: 0.4
