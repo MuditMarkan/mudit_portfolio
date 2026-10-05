@@ -94,6 +94,62 @@ app.get("/health", (req, res) => {
 });
 
 /* ============================================================
+   DEBUG ENDPOINT — checks keys + outbound connectivity
+   ============================================================ */
+
+app.get("/debug", async (req, res) => {
+  const groqKey  = process.env.GROQ_API_KEY;
+  const geminiKey = process.env.GEMINI_API_KEY;
+
+  const result = {
+    groqKeyPresent:   !!groqKey,
+    geminiKeyPresent: !!geminiKey,
+    groqKeyPrefix:    groqKey   ? groqKey.slice(0, 8)   + "..." : null,
+    geminiKeyPrefix:  geminiKey ? geminiKey.slice(0, 8) + "..." : null,
+    groqReachable:    null,
+    geminiReachable:  null,
+    groqError:        null,
+    geminiError:      null,
+  };
+
+  // Test outbound connectivity to Groq
+  if (groqKey) {
+    try {
+      const r = await fetch("https://api.groq.com/openai/v1/models", {
+        headers: { "Authorization": `Bearer ${groqKey}` }
+      });
+      result.groqReachable = r.ok;
+      if (!r.ok) {
+        const body = await r.json().catch(() => ({}));
+        result.groqError = `HTTP ${r.status}: ${body?.error?.message || r.statusText}`;
+      }
+    } catch (e) {
+      result.groqReachable = false;
+      result.groqError = e.message;
+    }
+  }
+
+  // Test outbound connectivity to Gemini
+  if (geminiKey) {
+    try {
+      const r = await fetch(
+        `https://generativelanguage.googleapis.com/v1/models?key=${geminiKey}`
+      );
+      result.geminiReachable = r.ok;
+      if (!r.ok) {
+        const body = await r.json().catch(() => ({}));
+        result.geminiError = `HTTP ${r.status}: ${body?.error?.message || r.statusText}`;
+      }
+    } catch (e) {
+      result.geminiReachable = false;
+      result.geminiError = e.message;
+    }
+  }
+
+  res.json(result);
+});
+
+/* ============================================================
    SYSTEM PROMPT
    ============================================================ */
 
@@ -366,7 +422,7 @@ async function callGroq(
       },
 
       body: JSON.stringify({
-        model: "llama-3.1-8b-instant",
+        model: "openai/gpt-oss-20b",
         messages: messages,
         max_tokens: 1024,
         temperature: 0.4
@@ -460,7 +516,7 @@ async function callGemini(
   ];
 
   const url =
-    `https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash-lite:generateContent?key=${geminiKey}`;
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${geminiKey}`;
 
   const response =
     await fetch(
@@ -652,8 +708,8 @@ app.post(
 
         } catch (error) {
 
-          console.warn(
-            `Groq attempt ${attempt} failed (${error.status}): ${error.message}`
+          console.error(
+            `Groq attempt ${attempt} failed (${error.status}): ${error.message}`, error
           );
 
 
@@ -711,8 +767,8 @@ app.post(
 
         } catch (error) {
 
-          console.warn(
-            `Gemini attempt ${attempt} failed (${error.status}): ${error.message}`
+          console.error(
+            `Gemini attempt ${attempt} failed (${error.status}): ${error.message}`, error
           );
 
 
