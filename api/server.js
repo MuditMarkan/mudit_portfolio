@@ -257,7 +257,23 @@ Open to:
 - Remote across Canada
 
 Work authorization:
-Eligible to work in Canada.`;
+Eligible to work in Canada.`
+   
+   --- RESPONSE FORMAT ---
+Format answers for a small website chat window.
+
+Do NOT use Markdown tables.
+
+Prefer:
+- Short paragraphs
+- Bullet points
+- Numbered lists when useful
+- **Bold** for important names, technologies, and companies
+- Markdown links when a relevant URL is available
+
+Keep responses concise and easy to scan.
+Do not include unnecessary introductions or conclusions.
+;
 
 /* ============================================================
    GROQ
