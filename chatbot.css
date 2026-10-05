@@ -390,3 +390,56 @@
     max-height: 480px;
   }
 }
+
+
+/* ============================================================
+   AI RESPONSE FORMATTING
+   ============================================================ */
+
+.chatbot-bubble a {
+  color: #7dd3fc;
+  text-decoration: underline;
+  font-weight: 500;
+  word-break: break-word;
+}
+
+.chatbot-bubble a:hover {
+  color: #bae6fd;
+}
+
+.chatbot-bubble strong {
+  font-weight: 700;
+}
+
+.chatbot-bubble h3,
+.chatbot-bubble h4 {
+  margin: 0 0 8px;
+  line-height: 1.35;
+}
+
+.chatbot-bubble h3 {
+  font-size: 1rem;
+}
+
+.chatbot-bubble h4 {
+  font-size: 0.95rem;
+}
+
+.chatbot-bubble ul {
+  margin: 8px 0;
+  padding-left: 20px;
+}
+
+.chatbot-bubble li {
+  margin: 5px 0;
+  line-height: 1.45;
+}
+
+.chatbot-bubble p {
+  margin: 0 0 8px;
+}
+
+.chatbot-bubble ul + br {
+  display: none;
+}
+
